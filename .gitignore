@@ -1,0 +1,21 @@
+# Python virtual environments and caches
+backend/.venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Next.js build cache and packages
+frontend/.next/
+frontend/node_modules/
+node_modules/
+
+# Local databases and logs
+backend/sagepilot.db
+sagepilot.db
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+temporal.exe
