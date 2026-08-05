@@ -1,51 +1,341 @@
 # AI Order Supervisor Dashboard
 
-A lightweight, production-ready proof-of-concept (POC) for an AI-native customer lifecycle supervisor. The system handles long-running order states, efficiently manages resource-conserving sleep cycles, executes targeted business tools, supports runtime human overrides, and maintains a complete, audited telemetry history footprint.
+An AI-powered Order Supervisor that continuously monitors customer orders, detects issues, decides the next action using an LLM, and allows human operators to pause, resume, or stop workflows at any time.
 
-## 🏗️ Architectural Core & Segregation of Concerns
-
-To pass strict startup code reviews, the application architecture explicitly isolates the deterministic execution machine from the non-deterministic AI runtime engine:
-
-1. **Deterministic Workflow Machine (`workflows/`)**: Orchestrates long-running order tracking loops without side effects. It leverages native `workflow.wait_condition` to enter or break resource-conserving sleep modes safely.
-2. **Stateless AI Engine (`agents/`)**: Houses your prompt frames, sliding compaction functions, and direct connections to the free `llama-3.3-70b-versatile` model via the official **Groq SDK**. It is strictly self-contained and avoids direct imports back to activities or workflows to completely prevent circular dependency deadlocks.
-3. **Boundary Activity Isolation (`activities/`)**: Bridges your workflows to the outside world. All network operations (Groq model inferences) and transactional data mutations are wrapped inside Temporal Activities to protect the orchestration player during state replays.
-4. **Persistent Multi-Threaded Storage (`db/`, `models/`)**: Employs **SQLAlchemy** connected to a local zero-configuration **SQLite** database container (`sagepilot.db`). Configured with `check_same_thread: False` to allow your web routes and background workers to interact concurrently without file-locking.
+The project demonstrates how AI Agents and Temporal Workflows can work together to build reliable, long-running business automation.
 
 ---
 
-## 📋 Features & Acceptance Criteria Coverage
+# Project Overview
 
-- **Dynamic Evolving Memory**: The supervisor doesn't blindly log events; it compresses the token window by maintaining a rolling metadata string tracking lifecycle changes.
-- **The 5 Mandatory Business Actions**: Fully supports the 5 business tools dictated by the guide: `message_fulfillment_team`, `message_payments_team`, `message_logistics_team`, `message_customer`, and `create_internal_note`.
-- **Manual Execution Control System**: Implements complete HTTP REST routes permitting operators to natively `Pause`, `Resume`, or `Kill` active threads directly from the dashboard.
-- **Bulleted Post-Mortem Card**: Upon terminal closures (`delivered`), the workflow triggers a final compaction loop to generate structured summaries, insights, and structural suggestions.
+The system monitors an order from the moment it is created until it is delivered.
+
+Whenever the order status changes, the workflow wakes up, gathers the latest information, asks the AI agent what should happen next, performs the recommended business action, stores everything in the database, and waits for the next event.
+
+Unlike traditional automation, the workflow can safely "sleep" for hours or even days without consuming system resources.
 
 ---
 
-## 🏃 Setup & Local Execution Sequence
+# Features
 
-Follow this exact terminal setup order to run the full application cluster locally:
+- AI-powered order supervision
+- Long-running Temporal workflows
+- Human-in-the-loop control
+- Pause, Resume and Kill workflows
+- Order timeline tracking
+- AI memory summarization
+- Business tool execution
+- Complete audit history
+- SQLite database storage
+- REST APIs using FastAPI
+- Modern Next.js dashboard
 
-### 1. Launch the Local Temporal Server
-Open a dedicated terminal tab, make sure your extracted `temporal.exe` binary sits at your root, and spin up the developer node:
+---
+
+# Project Architecture
+
+```
+                    Next.js Dashboard
+                           │
+                           ▼
+                    FastAPI Backend
+                           │
+                           ▼
+                Temporal Workflow Engine
+                           │
+             ┌─────────────┴─────────────┐
+             ▼                           ▼
+     Workflow Logic              Activity Layer
+                                        │
+                     ┌──────────────────┴─────────────────┐
+                     ▼                                    ▼
+               SQLite Database                  AI Supervisor Agent
+                                                        │
+                                                        ▼
+                                               Groq Llama 3.3 70B
+```
+
+---
+
+# Project Structure
+
+```
+order-supervisor/
+│
+├── backend/
+│
+│   ├── api/
+│   │      REST API endpoints
+│   │
+│   ├── workflows/
+│   │      Temporal workflow definitions
+│   │
+│   ├── activities/
+│   │      External operations and AI execution
+│   │
+│   ├── agents/
+│   │      LLM prompts and AI logic
+│   │
+│   ├── db/
+│   │      Database configuration
+│   │
+│   ├── models/
+│   │      SQLAlchemy models
+│   │
+│   ├── schemas/
+│   │      Request and response schemas
+│   │
+│   ├── services/
+│   │      Business logic
+│   │
+│   ├── core/
+│   │      Configuration and utilities
+│   │
+│   ├── worker.py
+│   ├── main.py
+│   └── requirements.txt
+│
+├── frontend/
+│      Next.js dashboard
+│
+└── README.md
+```
+
+---
+
+# Technology Stack
+
+### Backend
+
+- Python
+- FastAPI
+- Temporal
+- SQLAlchemy
+- SQLite
+- Pydantic
+
+### AI
+
+- Groq API
+- Llama-3.3-70B-Versatile
+
+### Frontend
+
+- Next.js
+- React
+- Tailwind CSS
+
+---
+
+# Workflow
+
+```
+Customer Order Created
+          │
+          ▼
+Temporal Workflow Starts
+          │
+          ▼
+Waits for Events
+          │
+          ▼
+Order Status Changes
+          │
+          ▼
+Activity Executes
+          │
+          ▼
+AI Agent Reviews Order
+          │
+          ▼
+Selects Business Action
+          │
+          ▼
+Stores Timeline & Memory
+          │
+          ▼
+Workflow Sleeps Again
+```
+
+---
+
+# Business Actions
+
+The AI Supervisor can perform the following actions:
+
+- Message Fulfillment Team
+- Message Payments Team
+- Message Logistics Team
+- Message Customer
+- Create Internal Note
+
+---
+
+# Human Controls
+
+Operators can manually control any running workflow.
+
+- Pause Workflow
+- Resume Workflow
+- Kill Workflow
+
+These controls are available through REST APIs and the dashboard.
+
+---
+
+# Database
+
+SQLite is used to store:
+
+- Orders
+- Timeline Events
+- AI Memory
+- Internal Notes
+- Workflow Status
+- AI Decisions
+
+---
+
+# API Endpoints
+
+| Method | Endpoint | Description |
+|----------|----------------|----------------------------|
+| POST | /orders | Create a new order |
+| GET | /orders | Get all orders |
+| GET | /orders/{id} | Get order details |
+| POST | /orders/{id}/pause | Pause workflow |
+| POST | /orders/{id}/resume | Resume workflow |
+| POST | /orders/{id}/kill | Stop workflow |
+
+---
+
+# Getting Started
+
+## 1. Start Temporal Server
+
 ```bash
 .\temporal.exe server start-dev
 ```
-*The Temporal Web UI tracker will be active at `http://localhost:8233`.*
 
-### 2. Boot the FastAPI Backend & Background Worker
-Open a second terminal panel, navigate into your backend directory, activate your python virtual environment container, and launch your Uvicorn routing engine:
+Temporal UI:
+
+```
+http://localhost:8233
+```
+
+---
+
+## 2. Start Backend
+
 ```bash
 cd backend
+
 .\.venv\Scripts\Activate.ps1
+
 uvicorn main:app --reload --port 8000
 ```
-*The FastAPI application automatically handles database table initialization and registers your workflow workers on boot.*
 
-### 3. Launch the Next.js Frontend Dashboard
-Open a third terminal panel, navigate into your frontend workspace folder, and start up your Next.js local developer node:
+Backend:
+
+```
+http://localhost:8000
+```
+
+---
+
+## 3. Start Frontend
+
 ```bash
 cd frontend
+
+npm install
+
 npm run dev
 ```
-*Open your web browser to `http://localhost:3000` to interact with your AI supervisor cockpit!*
+
+Frontend:
+
+```
+http://localhost:3000
+```
+
+---
+
+# Example Order Lifecycle
+
+```
+Order Created
+      │
+      ▼
+Payment Pending
+      │
+      ▼
+Payment Confirmed
+      │
+      ▼
+Preparing Order
+      │
+      ▼
+Shipped
+      │
+      ▼
+Out For Delivery
+      │
+      ▼
+Delivered
+```
+
+During every stage, the AI Supervisor checks the latest order information and decides whether any action is required.
+
+---
+
+# AI Memory
+
+Instead of storing every conversation forever, the AI maintains a compact running summary of important events.
+
+Example:
+
+- Payment delay detected
+- Customer contacted
+- Logistics notified
+- Shipment dispatched
+- Customer confirmed delivery
+
+This allows the AI to remember the important history while keeping prompts efficient.
+
+---
+
+# Why Temporal?
+
+Temporal provides:
+
+- Long-running workflows
+- Reliable execution
+- Automatic retries
+- Durable state
+- Event-based workflow execution
+- Safe workflow replay
+
+---
+
+# Future Improvements
+
+- Email notifications
+- SMS integration
+- WhatsApp integration
+- Multi-agent collaboration
+- PostgreSQL support
+- Docker deployment
+- Authentication
+- Role-based access control
+- Real-time WebSocket updates
+
+---
+
+# Author
+
+**Mirudhula D**
+
+AI/ML Engineer
+
+Focused on building production-ready AI systems using Python, FastAPI, Temporal, LLMs, and modern backend technologies.
