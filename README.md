@@ -5,6 +5,10 @@ An AI-powered Order Supervisor that continuously monitors customer orders, detec
 The project demonstrates how AI Agents and Temporal Workflows can work together to build reliable, long-running business automation.
 
 ---
+# Video Walkthrough
+
+https://www.loom.com/share/2cd5c1fefe8d4bbd89408c9fe0e42ca6
+
 
 # Project Overview
 
