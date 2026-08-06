@@ -340,6 +340,5 @@ Temporal provides:
 
 **Mirudhula D**
 
-AI/ML Engineer
 
 Focused on building production-ready AI systems using Python, FastAPI, Temporal, LLMs, and modern backend technologies.
