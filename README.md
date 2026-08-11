@@ -53,7 +53,7 @@ Unlike traditional automation, the workflow can safely "sleep" for hours or even
                                         │
                      ┌──────────────────┴─────────────────┐
                      ▼                                    ▼
-               SQLite Database                  AI Supervisor Agent
+               PostgreSQL Database (Supabase)               AI Supervisor Agent
                                                         │
                                                         ▼
                                                Groq Llama 3.3 70B
@@ -115,7 +115,7 @@ order-supervisor/
 - FastAPI
 - Temporal
 - SQLAlchemy
-- SQLite
+- PostgreSQL (Supabase)
 - Pydantic
 
 ### AI
@@ -189,7 +189,7 @@ These controls are available through REST APIs and the dashboard.
 
 # Database
 
-SQLite is used to store:
+PostgreSQL (via Supabase) is used to store:
 
 - Orders
 - Timeline Events
@@ -328,7 +328,6 @@ Temporal provides:
 - SMS integration
 - WhatsApp integration
 - Multi-agent collaboration
-- PostgreSQL support
 - Docker deployment
 - Authentication
 - Role-based access control
